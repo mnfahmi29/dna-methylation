@@ -1,159 +1,228 @@
-**⚠️⚠️Desclaimer: due to my new step in Github, I will post my code as soon as possible⚠️⚠️**
-# DNA Methylation t-SNE & CNV Analysis (R)
+# 🧬✨ DNA Methylation: t-SNE & CNV Pipeline (R)
 
-A reproducible R pipeline for **DNA methylation array (IDAT)** analysis focused on:
+Welcome, Fahmi is here! 👋
+This repository is a **reproducible, helper-driven R pipeline** for analyzing **Illumina DNA methylation array (IDAT)** data, with two main superpowers:
 
-- **t-SNE embedding** against a public reference cohort for tumor classification / contextualization  
-- **Copy Number Variation (CNV)** analysis derived from methylation intensities
+🌀 **t-SNE embedding** for contextualizing samples
+🧬 **CNV inference** directly from methylation intensities
 
-This repository is intentionally scoped to **methylation-based analyses only**.  
-It does **not** perform RNA-seq, fusion detection, or transcriptomic analyses.
-
----
-
-## ✨ Features
-
-- Read and preprocess Illumina methylation IDAT files
-- Harmonize case samples with a public reference cohort
-- Perform dimensionality reduction (PCA → t-SNE)
-- Generate:
-  - Global t-SNE embedding
-  - Zoomed-in neighborhood plots for specific tumor classes
-- Perform CNV analysis using methylation intensities
-- Export publication-ready figures and summary tables
-- Fully reproducible via `renv`
+> Think of this repo as a **methylation microscope** 🔬
+> It helps you *look*, *compare*, and *contextualize* — not magically diagnose.
 
 ---
 
-## 📁 Repository Structure
+## 🧠 What This Repo Is (and Isn’t)
+
+### ✅ What it DOES
+
+* Read Illumina IDAT files (450k / EPIC / EPICv2)
+* Build clean beta matrices (samples × probes)
+* Embed samples using **PCA → t-SNE**
+* Visualize:
+
+  * 🌍 global methylation landscapes
+  * 🔍 zoomed neighborhoods
+* Infer **copy number variation (CNV)** from methylation intensities
+* Export **publication-ready figures & tables**
+* Lock all package versions with **`renv`**
+* Separate **biology decisions** from **code logic** (this is important!)
+
+### ❌ What it very intentionally does NOT do
+
+* RNA-seq analysis ❌
+* Fusion detection ❌
+* FASTQ / BAM handling ❌
+* Expression inference ❌
+
+Why?
+Because **IDAT files cannot do those things** — and pretending otherwise is bad science 😌
+
+---
+
+## ✨ Repo Philosophy (aka “Why this feels nice to work with”)
+
+> **The workflow is reproducible.**
+> **The helpers are reusable.**
+> **The biology is explicit.**
+> **The judgment stays with the user.**
+
+No hidden magic.
+No silent assumptions.
+No “trust me bro” CNV results.
+
+---
+
+## 📁 Repository Structure (Current Reality)
 
 ```text
-dna-methylation-tsne-cnv-r/
+dna-methylation-tsne-cnv/
 ├─ README.md
 ├─ renv.lock
 ├─ .gitignore
-├─ R/
-│  ├─ 01_setup.R
-│  ├─ 02_idat_import_controls.R
-│  ├─ 03_tsne_classification.R
-│  ├─ 04_cnv_conumee2.R
-│  ├─ 05_reports_export.R
-│  └─ utils/
-│     ├─ io_helpers.R
-│     ├─ plotting_helpers.R
-│     └─ safe_filename.R
-├─ data/
-│  ├─ raw/            # local only (IDATs not committed)
-│  └─ example/        # dummy metadata only
-├─ results/           # generated outputs (ignored by git)
-└─ docs/
-   ├─ figures/
-   └─ notes.md
-````
+├─ .renvignore
+├─ .Rprofile
+│
+├─ filter/                  # probe exclusion lists
+│  ├─ amb_3965probes.vh20151030.txt
+│  ├─ epicv1B2_32260probes.vh2016.txt
+│  ├─ snp_7998probes.vh20151030.txt
+│  └─ xy_11551probes.vh20151030.txt
+│
+├─ helpers/
+│  └─ MNPTraining/           # reusable brain cells 🧠
+│     ├─ MNPprocessIDAT_functions.R
+│     ├─ RSpectra_pca.R
+│     ├─ batch_tools.R
+│     ├─ cnv_tools.R
+│     ├─ config_tools.R
+│     ├─ plot_tsne_tools.R
+│     └─ probe_id_tools.R
+│
+├─ ori_script/               # original exploratory scripts (archive)
+│  ├─ ori_preprocessing.R
+│  ├─ ori_tsne.R
+│  └─ ori_cnv.R
+│
+├─ src/                      # the actual pipeline 🚀
+│  ├─ 01_prework.R
+│  ├─ 02_embedding_tsne.R
+│  └─ 03_cnv_conumee2.R
+│
+└─ results/                  # outputs (gitignored, always)
+```
 
 ---
 
-## 🔒 Data Policy & Privacy
+## 🧠 How to Think About This Repo (Mental Model)
 
-* **Raw IDAT files are never committed**
-* `data/raw/` is intentionally gitignored
-* Only **dummy / synthetic metadata** is stored in `data/example/`
-* No patient identifiers (name, MRN, DOB, hospital number) should appear anywhere in the repo
+### 🟦 `src/` — *the workflow*
 
-This repository is safe to share publicly **as code only**.
+Short, readable, boring (boring = good).
+
+* **`01_prework.R`**
+  🧱 Builds the foundation
+
+  * reads IDATs
+  * preprocesses methylation
+  * harmonizes probes
+  * saves clean betas
+
+* **`02_embedding_tsne.R`**
+  🌌 Makes things pretty (and interpretable)
+
+  * PCA → t-SNE
+  * global & zoomed plots
+  * visualization only (no biological claims)
+
+* **`03_cnv_conumee2.R`**
+  🧬 Where CNV happens
+
+  * choose controls
+  * match GEO → IDATs
+  * run CNV per case
+  * export everything neatly
+
+### 🟩 `helpers/` — *the brains*
+
+Reusable logic lives here:
+
+* probe ID sanity
+* plotting helpers
+* CNV mechanics
+* early “contract checks” that scream before mistakes happen 🔥
+
+### 🟨 `ori_script/` — *the fossil record*
+
+Old exploratory scripts, kept for transparency and provenance.
 
 ---
 
-## 🔁 Reproducibility (`renv`)
+## 🔬 Dataset-Aware by Design (Yes, This Is Correct)
 
-This project uses **`renv`** to lock R package versions.
+Some things **cannot** be universal in CNV analysis — and that’s okay.
 
-### First-time setup
+| Item               | Why you must define it     |
+| ------------------ | -------------------------- |
+| Control classes    | Biology depends on dataset |
+| GEO labels         | Vary across studies        |
+| Zoom regions       | Pure visualization choice  |
+| CNV interpretation | Always biological judgment |
+
+This repo **forces those choices to be explicit**, instead of hiding them.
+
+> Reproducible ≠ pretending biology is generic.
+
+---
+
+## 🔒 Data Policy & Privacy (Non-Negotiable)
+
+* 🔐 **Raw IDAT files are NEVER committed**
+* 📁 `results/` is always gitignored
+* 🧪 Only code + dummy metadata live here
+* 🚫 No patient identifiers, ever
+
+This repo is safe to share **publicly as code only**.
+
+---
+
+## 🔁 Reproducibility with `renv` (One-Time Ritual)
 
 ```r
 install.packages("renv")
 renv::restore()
 ```
 
-This installs the exact package versions used to develop the pipeline.
+That’s it.
+Everyone now runs the **same R universe** 🌍
 
 ---
 
-## ▶️ How to Run
-
-After placing your IDAT files locally and preparing a sample sheet:
+## ▶️ How to Run (The Happy Path)
 
 ```r
-source("R/01_setup.R")
-source("R/02_idat_import_controls.R")
-source("R/03_tsne_classification.R")
-source("R/04_cnv_conumee2.R")
-source("R/05_reports_export.R")
+source("src/01_prework.R")
+source("src/02_embedding_tsne.R")
+source("src/03_cnv_conumee2.R")
 ```
 
-All outputs will be written to the `results/` directory.
+Grab coffee ☕
+Check `results/` 📂
+Smile 😄
 
 ---
 
-## 📤 Outputs
+## 📤 What You Get Out
 
-### t-SNE
+### 🌀 t-SNE
 
-* `results/tsne_global.pdf`
-* `results/tsne_zoom_<CLASS>.pdf`
-* Sample-level embedding coordinates
+* Global methylation landscape
+* Zoomed neighborhood plots
+* Sample-level coordinates
 
-### CNV
+### 🧬 CNV
 
-* Genome-wide CNV segment plots
-* Gene-level focal CNV plots (e.g. EGFR, CDKN2A/B, MDM2)
-* Tabular summaries of focal events
-
----
-
-## 🚫 Explicit Non-Goals
-
-This repository **does not**:
-
-* Perform RNA-seq analysis
-* Detect gene fusions
-* Analyze FASTQ / BAM files
-* Infer transcriptomic expression
-
-IDAT files **cannot** support these analyses, and they are intentionally excluded.
-
----
-
-## 📚 Methods (high-level)
-
-* Methylation preprocessing: Illumina array preprocessing via `minfi`
-* Dimensionality reduction: PCA followed by t-SNE
-* CNV inference: methylation intensity-based CNV calling
-* Visualization: `ggplot2`, base plotting, and PDF export
-
-Detailed method notes are available in `docs/`.
+* Genome-wide CNV plots
+* Segment tables
+* Focal CNV exploration (EGFR, CDKN2A/B, etc.)
+* Clean per-case output bundles
 
 ---
 
 ## 🧪 Intended Use
 
-This repository is designed for:
+This repository is for:
 
-* Exploratory methylation-based tumor classification
-* Case contextualization against known reference cohorts
-* CNV screening from methylation data
-* Research and educational use
+* Exploratory methylation-based tumor analysis
+* Case contextualization vs public references
+* CNV screening from methylation arrays
+* Research & education
 
 It is **not** a diagnostic tool.
 
 ---
 
-## 📜 License
-
-Specify your license here (e.g. MIT, BSD-3, or institutional license).
-
----
-
 ## ✍️ Author
 
-Dr. Muhammad Nur Fahmi
+**Dr. Muhammad Nur Fahmi**
+
+This repo already *feels* like something reviewers won’t hate — which is rare and beautiful 😌
