@@ -54,7 +54,7 @@ No “trust me bro” CNV results.
 
 ---
 
-## 📁 Repository Structure (Current Reality)
+## 📁 Repository Structure
 
 ```text
 dna-methylation-tsne-cnv/
@@ -95,7 +95,7 @@ dna-methylation-tsne-cnv/
 
 ---
 
-## 🧠 How to Think About This Repo (Mental Model)
+## 🧠 How to Think About This Repo
 
 ### 🟦 `src/` — *the workflow*
 
@@ -139,7 +139,7 @@ Old exploratory scripts, kept for transparency and provenance.
 
 ---
 
-## 🔬 Dataset-Aware by Design (Yes, This Is Correct)
+## 🔬 Dataset-Aware by Design
 
 Some things **cannot** be universal in CNV analysis — and that’s okay.
 
@@ -156,30 +156,30 @@ This repo **forces those choices to be explicit**, instead of hiding them.
 
 ---
 
-## 🔒 Data Policy & Privacy (Non-Negotiable)
+## 🔒 Data Policy & Privacy
 
 * 🔐 **Raw IDAT files are NEVER committed**
 * 📁 `results/` is always gitignored
 * 🧪 Only code + dummy metadata live here
 * 🚫 No patient identifiers, ever
-
+  
 This repo is safe to share **publicly as code only**.
 
 ---
 
-## 🔁 Reproducibility with `renv` (One-Time Ritual)
+## 🔁 Reproducibility with `renv`
 
 ```r
 install.packages("renv")
 renv::restore()
 ```
 
-That’s it.
-Everyone now runs the **same R universe** 🌍
+That’s it.  
+Everyone now runs the **same R universe** 🌍  
 
 ---
 
-## ▶️ How to Run (The Happy Path)
+## ▶️ How to Run
 
 ```r
 source("src/01_prework.R")
@@ -187,9 +187,9 @@ source("src/02_embedding_tsne.R")
 source("src/03_cnv_conumee2.R")
 ```
 
-Grab coffee ☕
-Check `results/` 📂
-Smile 😄
+Grab coffee ☕  
+Check `results/` 📂  
+Smile 😄  
 
 ---
 
