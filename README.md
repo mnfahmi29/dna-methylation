@@ -223,6 +223,32 @@ It is **not** a diagnostic tool.
 
 ---
 
+## 🙏 Acknowledgements & Upstream References
+
+This repository builds upon and adapts ideas, helper functions, and filter resources from the following upstream project:
+
+**MNP Training Repository**  
+🔗 [https://github.com/mwsill/mnp_training](https://github.com/mwsill/mnp_training)
+
+Specifically, inspiration and adapted logic were taken from:
+
+- `MNPprocessIDAT_functions.R`  
+  → preprocessing helpers for Illumina methylation IDAT files ==> In our repo, we add some modification for EPICv2 
+- `RSpectra_pca.R`  
+  → fast PCA routines for large methylation matrices  
+- `filter/` resources  
+  → probe exclusion lists (SNP, sex chromosomes, ambiguous probes)
+
+These components have been **integrated, refactored, and extended** to support:
+- EPICv2 compatibility
+- modern `renv`-based reproducibility
+- modular helper-based workflows
+- explicit dataset-aware configuration
+
+All mistakes or modifications in this repository are the responsibility of the author.
+
+---
+
 ## ✍️ Author
 
 **Dr. Muhammad Nur Fahmi**
