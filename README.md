@@ -70,15 +70,15 @@ dna-methylation-tsne-cnv/
 │  ├─ snp_7998probes.vh20151030.txt
 │  └─ xy_11551probes.vh20151030.txt
 │
-├─ helpers/
-│  └─ MNPTraining/           # reusable brain cells 🧠
-│     ├─ MNPprocessIDAT_functions.R
-│     ├─ RSpectra_pca.R
-│     ├─ batch_tools.R
-│     ├─ cnv_tools.R
-│     ├─ config_tools.R
-│     ├─ plot_tsne_tools.R
-│     └─ probe_id_tools.R
+├─ helpers/                 # reusable brain cells 🧠
+│  └─ MNPTraining/          # source from another Github, usable
+│  │  ├─ MNPprocessIDAT_functions.R
+│  │  └─ RSpectra_pca.R
+│  ├─ batch_tools.R
+│  ├─ cnv_tools.R
+│  ├─ config_tools.R
+│  ├─ plot_tsne_tools.R
+│  └─ probe_id_tools.R
 │
 ├─ ori_script/               # original exploratory scripts (archive)
 │  ├─ ori_preprocessing.R
