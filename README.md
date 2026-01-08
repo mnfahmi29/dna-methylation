@@ -45,12 +45,12 @@ Because **IDAT files cannot do those things** — and pretending otherwise is ba
 
 > **The workflow is reproducible.**
 > **The helpers are reusable.**
-> **The biology is explicit.**
+> **The biology is explicit.** 
 > **The judgment stays with the user.**
 
-No hidden magic.
-No silent assumptions.
-No “trust me bro” CNV results.
+No hidden magic.  
+No silent assumptions.  
+No “trust me bro” CNV results.  
 
 ---
 
