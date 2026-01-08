@@ -43,10 +43,10 @@ Because **IDAT files cannot do those things** — and pretending otherwise is ba
 
 ## ✨ Repo Philosophy (aka “Why this feels nice to work with”)
 
-> **The workflow is reproducible.**
-> **The helpers are reusable.**
-> **The biology is explicit.** 
-> **The judgment stays with the user.**
+> **The workflow is reproducible.**  
+> **The helpers are reusable.**  
+> **The biology is explicit.**  
+> **The judgment stays with the user.**  
 
 No hidden magic.  
 No silent assumptions.  
