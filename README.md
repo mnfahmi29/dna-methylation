@@ -1,13 +1,14 @@
 # 🧬✨ DNA Methylation: t-SNE & CNV Pipeline (R)
 
 Welcome, Fahmi is here! 👋  
-This repository is a **reproducible, helper-driven R pipeline** for analyzing **Illumina DNA methylation array (IDAT)** data, with two main superpowers:
-
-🌀 **t-SNE embedding** for contextualizing samples
-🧬 **CNV inference** directly from methylation intensities
-
-> Think of this repo as a **methylation microscope** 🔬
-> It helps you *look*, *compare*, and *contextualize* — not magically diagnose.
+  
+This repository is a **reproducible, helper-driven R pipeline** for analyzing **Illumina DNA methylation array (IDAT)** data, with two main superpowers:  
+  
+🌀 **t-SNE embedding** for contextualizing samples  
+🧬 **CNV inference** directly from methylation intensities  
+  
+> Think of this repo as a **methylation microscope** 🔬  
+> It helps you *look*, *compare*, and *contextualize* — not magically diagnose.  
 
 ---
 
