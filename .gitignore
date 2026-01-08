@@ -1,0 +1,14 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+# Data & outputs (never commit)
+data/
+results/
+*.idat
+*.IDAT
+*.rds
+*.RData
+*.pdf
+*.png

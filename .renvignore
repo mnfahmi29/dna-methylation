@@ -1,0 +1,8 @@
+data/
+results/
+renv/library/
+renv/staging/
+*.idat
+*.IDAT
+ori_script/
+helper/
