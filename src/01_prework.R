@@ -196,6 +196,9 @@ M_icm <- preprocess_any(RG_icm)
 M_gbm <- trim_methylation_object_probes(M_gbm, verbose = TRUE)
 M_icm <- trim_methylation_object_probes(M_icm, verbose = TRUE)
 
+M_gbm <- filter_probes_mset(M_gbm)
+M_icm <- filter_probes_mset(M_icm)
+
 beta_gbm <- betas_from_mset(M_gbm)
 beta_icm <- betas_from_mset(M_icm)
 

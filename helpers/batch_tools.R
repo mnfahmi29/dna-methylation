@@ -16,8 +16,50 @@ suppressPackageStartupMessages({
 })
 
 # -----------------------------
-# 1) Intensity-level batch correction (preferred)
+# 1) Intensity-level batch correction 
 # -----------------------------
+# ------------------------------------------------------------
+# Probe filtering helper
+# ------------------------------------------------------------
+filter_probes_mset <- function(Mset, filter_dir = "filter") {
+  stopifnot("MethylSet" %in% class(Mset))
+  
+  message("🧹 Probe filtering ... ", Sys.time())
+  
+  probes <- rownames(Mset)
+  
+  # --- Load filter lists ---
+  amb.filter  <- read.table(file.path(filter_dir, "amb_3965probes.vh20151030.txt"),
+                            header = FALSE, stringsAsFactors = FALSE)[,1]
+  epic.filter <- read.table(file.path(filter_dir, "epicV1B2_32260probes.vh20160325.txt"),
+                            header = FALSE, stringsAsFactors = FALSE)[,1]
+  snp.filter  <- read.table(file.path(filter_dir, "snp_7998probes.vh20151030.txt"),
+                            header = FALSE, stringsAsFactors = FALSE)[,1]
+  xy.filter   <- read.table(file.path(filter_dir, "xy_11551probes.vh20151030.txt"),
+                            header = FALSE, stringsAsFactors = FALSE)[,1]
+  
+  # --- Pattern-based filters ---
+  rs.filter <- grep("^rs", probes, value = TRUE)
+  ch.filter <- grep("^ch", probes, value = TRUE)
+  
+  # --- Union of all bad probes ---
+  bad_probes <- unique(c(
+    amb.filter,
+    epic.filter,
+    snp.filter,
+    xy.filter,
+    rs.filter,
+    ch.filter
+  ))
+  
+  keep <- setdiff(probes, bad_probes)
+  
+  message("❌ Removed probes: ", length(probes) - length(keep))
+  message("✅ Remaining probes: ", length(keep))
+  
+  Mset[keep, ]
+}
+
 batch_correct_meth_unmeth <- function(
     methy,
     unmethy,
@@ -55,7 +97,7 @@ batch_correct_meth_unmeth <- function(
 }
 
 # -----------------------------
-# 2) Beta-level batch correction (use with caution)
+# 2) Beta-level batch correction
 # -----------------------------
 batch_correct_betas <- function(
     betas,
