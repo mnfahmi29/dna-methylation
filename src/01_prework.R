@@ -61,10 +61,10 @@ suppressPackageStartupMessages({
 # (boring = reproducible = good science)._.
 
 # Probe handling, EPICv2 trimming, beta extraction
-source(file.path("R", "helpers", "probe_id_tools.R"))
+source(file.path("helpers", "probe_id_tools.R"))
 
 # Batch correction helpers (explicit, opt-in only)
-source(file.path("R", "helpers", "batch_tools.R"))
+source(file.path("helpers", "batch_tools.R"))
 
 # ------------------------------------------------------------
 # Vendor helpers (external, but pinned in this repo) 📦
@@ -75,11 +75,11 @@ source(file.path("R", "helpers", "batch_tools.R"))
 #
 # RSpectra_pca.R
 #   - fast PCA for sanity checking large matrices
-if (file.exists(file.path("R", "MNPTraining", "MNPprocessIDAT_functions.R"))) {
-  source(file.path("R", "MNPTraining", "MNPprocessIDAT_functions.R"))
+if (file.exists(file.path("helpers", "MNPTraining", "MNPprocessIDAT_functions.R"))) {
+  source(file.path("helpers", "MNPTraining", "MNPprocessIDAT_functions.R"))
 }
-if (file.exists(file.path("R", "MNPTraining", "RSpectra_pca.R"))) {
-  source(file.path("R", "MNPTraining", "RSpectra_pca.R"))
+if (file.exists(file.path("helpers", "MNPTraining", "RSpectra_pca.R"))) {
+  source(file.path("helpers", "MNPTraining", "RSpectra_pca.R"))
 }
 
 ensure_dir("results")  # create output folder if needed
@@ -96,7 +96,7 @@ CASE_ICM_DIR <- "data/Intracranial Mesenchymal FET_CREB Fusion"
 # GBM and ICM are example for this code, 
 # you could use as many idat files as you like
 
-# Fail early if paths are wrong (cheap pain > silent bugs)
+# Check if your file really in the path
 stopifnot(
   dir.exists(GSE_RAW_DIR),
   dir.exists(CASE_GBM_DIR),

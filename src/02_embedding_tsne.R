@@ -35,12 +35,12 @@ suppressPackageStartupMessages({
 })
 
 # Helpers
-source(file.path("R", "helpers", "probe_id_tools.R"))
-source(file.path("R", "helpers", "plot_tsne_tools.R"))
+source(file.path("helpers", "probe_id_tools.R"))
+source(file.path("helpers", "plot_tsne_tools.R"))
 
 # Optional: fast PCA helper (turbo mode 🚀)
-if (file.exists(file.path("R", "MNPTraining", "RSpectra_pca.R"))) {
-  source(file.path("R", "MNPTraining", "RSpectra_pca.R"))
+if (file.exists(file.path("helpers", "MNPTraining", "RSpectra_pca.R"))) {
+  source(file.path("helpers", "MNPTraining", "RSpectra_pca.R"))
 }
 
 ensure_dir("results")
@@ -60,7 +60,7 @@ message("🍱 Loaded betas_all: ", nrow(betas_all), " samples × ", ncol(betas_a
 message("🏷️ Annotation rows: ", nrow(anno_combined), " (should match samples) ✅")
 
 # ------------------------------------------------------------
-# 2) Filter probes ✂️ (remove boring probes)
+# 2) Filter probes ✂️
 # ------------------------------------------------------------
 # Why filter?
 # - Probes with near-zero variance contribute almost nothing.
@@ -86,7 +86,7 @@ if (any(na_cols)) {
 }
 
 # ------------------------------------------------------------
-# 3) PCA first 🧠➡️📦 (compress before teleportation)
+# 3) PCA first 🧠➡️📦
 # ------------------------------------------------------------
 # PCA is like:
 # “Let’s pack 20,000 probes into 50 suitcases” 🧳🧳🧳
@@ -123,7 +123,7 @@ message("📦 PCA matrix ready: ", nrow(X), " samples × ", ncol(X), " PCs ✅")
 # - perplexity: neighborhood size (must be < (n-1)/3)
 # - theta: speed/accuracy tradeoff (0=exact, 0.5=typical)
 # - max_iter: stability (more = better, but slower)
-set.seed(42)  # reproducible chaos 🎲✅
+set.seed(42)  # for reproducibility 🎲✅
 
 n <- nrow(X)
 perplexity <- min(30, floor((n - 1) / 3) - 1)
@@ -180,7 +180,7 @@ message("💾 Saved embedding: ", out_rds, " ✅")
 #   - plot_tsne_zoom()
 #   - save_plot_png_pdf()
 #
-# All are defined in R/helpers/plot_tsne_tools.R :contentReference[oaicite:3]{index=3} :contentReference[oaicite:4]{index=4}
+# All are defined in R/helpers/plot_tsne_tools.R 
 
 suppressPackageStartupMessages({
   library(dplyr)
@@ -203,6 +203,7 @@ class_col <- if ("methylation class:ch1" %in% colnames(anno_combined)) {
        "Expected something like 'methylation class:ch1'. ",
        "Check colnames(anno_combined).")
 }
+# just to make sure, sometimes it could be "methylation class:ch1" or "methylation.class.ch1"
 
 # -----------------------------
 # 6B) Define which samples are “cases” 🧪
@@ -235,7 +236,6 @@ case_names <- c("Case_GBM", "Case_ICM")  # <-- EDIT ME (can be character(0))
 #   "EPN, PF A" = "Ependymal"
 # )
 # If group_map = NULL → helper will just use class (or leave group NA for cases).
-group_map <- NULL  # <-- USER DECIDES (recommended for non-GSE90496)
 # If you use GSE90496, you could use this, this is my grouping:
 group_map <- c(
   # Embryonal
@@ -343,13 +343,13 @@ group_map <- c(
 
 
 # -----------------------------
-# 6D) Contract check (early screaming 😱✅)
+# 6D) Checkpoint screening 😱✅
 # -----------------------------
 # Ensures:
 # - emb has sample column
 # - anno has class_col
 # - all emb samples exist in anno rownames
-check_tsne_contract(emb, anno_combined, class_col)  # :contentReference[oaicite:5]{index=5}
+check_tsne_contract(emb, anno_combined, class_col)
 
 # -----------------------------
 # 6E) Build plotting df (coords + class + case flags + optional group) 🧩
@@ -361,7 +361,7 @@ df_plot <- build_tsne_df(
   case_names = case_names,
   group_map  = group_map,
   group_col_name = "group"
-)  # :contentReference[oaicite:6]{index=6}
+) 
 
 message("🧪 Case count check:"); print(table(df_plot$is_case))
 
@@ -386,7 +386,7 @@ save_plot_png_pdf(
   p_global,
   out_prefix = file.path("results", "tsne", "tsne_global"),
   width = 20, height = 8, dpi = 600
-)  # :contentReference[oaicite:7]{index=7}
+) 
 
 message("🖼️ Saved GLOBAL plot: results/tsne/tsne_global.(png|pdf) ✅")
 
@@ -418,7 +418,7 @@ if (do_zoom_by_cases || do_zoom_by_class) {
     p_zoom,
     out_prefix = file.path("results", "tsne", "tsne_zoom"),
     width = 20, height = 8, dpi = 600
-  )  # :contentReference[oaicite:8]{index=8}
+  ) 
   
   message("🖼️ Saved ZOOM plot: results/tsne/tsne_zoom.(png|pdf) ✅")
 } else {

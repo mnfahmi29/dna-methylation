@@ -24,15 +24,14 @@ library(ggplot2)
 library(data.table)
 library(renv)
 
-# Your helper (optional)
 if (file.exists(file.path("R","MNPprocessIDAT_functions.R"))) {
   source(file.path("R","MNPprocessIDAT_functions.R"))
 }
 
 dir.create("results", showWarnings=FALSE)
 
-# ------------------ PATHS (EDIT) ------------------
-GSE_RAW_DIR  <- "data/GSE90496_RAW"  # extracted *.idat pairs
+# ------------------ PATHS  ------------------
+GSE_RAW_DIR  <- "data/GSE90496_RAW" 
 CASE_GBM_DIR <- "data/Case GBM_MES"
 CASE_ICM_DIR <- "data/Intracranial Mesenchymal FET_CREB Fusion"
 
@@ -75,29 +74,55 @@ batch_correct_meth_unmeth <- function(methy, unmethy, material) {
   list(methy.ba=methy.ba, unmethy.ba=unmethy.ba, batch=batch)
 }
 
+# ------------------ Probe filtering ------------------
+filter_probes <- function(Mset, filter_dir="filter") {
+  fl_amb  <- file.path(filter_dir, "amb_3965probes.vh20151030.txt")
+  fl_epic <- file.path(filter_dir, "epicV1B2_32260probes.vh20160325.txt")
+  fl_snp  <- file.path(filter_dir, "snp_7998probes.vh20151030.txt")
+  fl_xy   <- file.path(filter_dir, "xy_11551probes.vh20151030.txt")
+  
+  if (!all(file.exists(c(fl_amb, fl_epic, fl_snp, fl_xy)))) {
+    warning("Probe filtering skipped: missing one or more filter files under '", filter_dir, "'.")
+    return(Mset)
+  }
+  
+  message("probe filtering ...", Sys.time())
+  amb.filter  <- read.table(fl_amb,  header=FALSE)
+  epic.filter <- read.table(fl_epic, header=FALSE)
+  snp.filter  <- read.table(fl_snp,  header=FALSE)
+  xy.filter   <- read.table(fl_xy,   header=FALSE)
+  
+  rs.filter <- grep("^rs", rownames(Mset))
+  ch.filter <- grep("^ch", rownames(Mset))
+  
+  remove <- unique(c(
+    match(amb.filter[,1],  rownames(Mset)),
+    match(epic.filter[,1], rownames(Mset)),
+    match(snp.filter[,1],  rownames(Mset)),
+    match(xy.filter[,1],   rownames(Mset)),
+    rs.filter,
+    ch.filter
+  ))
+  remove <- remove[!is.na(remove)]
+  
+  message(sprintf("Removing %d / %d probes (%.2f%%).",
+                  length(remove), nrow(Mset), 100*length(remove)/max(1,nrow(Mset))))
+  Mset[-remove, ]
+}
+
 # ------------------ 2) GEO annotation ------------------
 gse  <- getGEO("GSE90496", GSEMatrix=TRUE, getGPL=FALSE)
-anno <- pData(gse$GSE90496_series_matrix.txt.gz)
-
-# Choose reference subset (RECOMMENDED to reduce RAM):
-# Option A: GBM only (as you were doing)
-# anno_ref <- anno[grep("^GBM", anno$`methylation class:ch1`), , drop=FALSE]
-# USE ALL CLASSES
-anno_ref <- anno
-
-
-# (If you want all classes later, set: anno_ref <- anno)
+anno_ref <- pData(gse$GSE90496_series_matrix.txt.gz)
 
 fname <- gsub("_Grn.*", "", gsub(".*suppl/", "", anno_ref$supplementary_file))
 filepath_gse_all <- file.path(GSE_RAW_DIR, fname)
 
-# ------------------ 3) Read your EPICv2 cases ------------------
+# ------------------ 3) Read EPICv2 cases ------------------
 RG_gbm <- read.metharray.exp(CASE_GBM_DIR, verbose=TRUE)
 RG_icm <- read.metharray.exp(CASE_ICM_DIR, verbose=TRUE)
 colnames(RG_gbm) <- "Case_GBM"
 colnames(RG_icm) <- "Case_ICM"
 
-# Minimal annotation (ONLY what you need)
 anno_gse_small <- data.frame(
   row.names = fname,  # IMPORTANT: will align after we read GSE in chunks
   `methylation class:ch1` = anno_ref$`methylation class:ch1`,
@@ -112,7 +137,6 @@ anno_cases <- data.frame(
 )
 
 # ------------------ 4) CHUNKING: read + preprocess GSE safely ------------------
-# Why chunk? Reading 300+ IDATs at once can blow RAM and crash RStudio.
 chunk_size <- 25
 chunks <- split(filepath_gse_all, ceiling(seq_along(filepath_gse_all) / chunk_size))
 
@@ -125,8 +149,9 @@ for (i in seq_along(chunks)) {
   
   RG_chunk <- read.metharray(chunks[[i]], verbose=FALSE)
   M_chunk  <- preprocess_any(RG_chunk)
+  M_chunk  <- filter_probes(M_chunk)
   
-  # Reference is 450k/EPICv1 so no suffix trim needed here
+  # Reference is 450k/EPICv1 so no suffix trimming
   
   meth <- getMeth(M_chunk)
   unm  <- getUnmeth(M_chunk)
@@ -144,8 +169,8 @@ betas_gse <- do.call(rbind, betas_chunks)
 rownames(betas_gse) <- unlist(sample_names_chunks)
 
 # ------------------ 5) Preprocess cases and compute betas ------------------
-M_gbm <- trim_cg_ids(preprocess_any(RG_gbm))
-M_icm <- trim_cg_ids(preprocess_any(RG_icm))
+M_gbm <- filter_probes(trim_cg_ids(preprocess_any(RG_gbm)))
+M_icm <- filter_probes(trim_cg_ids(preprocess_any(RG_icm)))
 
 beta_gbm <- t(getMeth(M_gbm) / (getMeth(M_gbm) + getUnmeth(M_gbm) + 100))
 beta_icm <- t(getMeth(M_icm) / (getMeth(M_icm) + getUnmeth(M_icm) + 100))
@@ -173,10 +198,7 @@ anno_ref2 <- data.frame(
 anno_combined <- rbind(anno_ref2, anno_cases)
 anno_combined <- anno_combined[rownames(betas_all), , drop=FALSE]
 
-# ------------------ 7) Batch correction on meth/unmeth? ------------------
-# If you only have betas, do NOT try to do the original meth/unmeth batch correction.
-# (That correction is defined on meth/unmeth intensities.)
-# For now: skip if you are running betas-only reference.
+# ------------------ 7) Save to Directory ------------------
 message("NOTE: using betas-only reference; skipping meth/unmeth batch correction.")
 
 save(betas_all, anno_combined, file=file.path("results","betas_all.RData"))

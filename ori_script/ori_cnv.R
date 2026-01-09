@@ -28,8 +28,6 @@ Sys.which("make")
 
 if (!requireNamespace("BiocManager", quietly = TRUE))
   install.packages("BiocManager")
-
-# Reset repositories to Bioconductor standard
 options(repos = BiocManager::repositories())
 
 BiocManager::install(version = "3.20", ask = FALSE)
@@ -60,19 +58,16 @@ GBM <- "data/Case GBM_MES"
 ICM <- "data/Intracranial Mesenchymal FET_CREB Fusion"
 GSE  <- "data/GSE90496_RAW"
 
-# ---- control classes ----
+# ---- reference classes from GSE90496 ----
 ctrl_classes <- c("REACT","PONS","PINEAL","INFLAM","HYPTHAL","HEMI","CEBM","WM","ADENOPIT")
 pattern <- paste0("\\b(", paste(ctrl_classes, collapse="|"), ")\\b")
 
-# ---- 1) Load GSE matrix (phenodata) ----
+# ---- 1) Load GSE matrix ----
 gse1 <- getGEO("GSE90496", GSEMatrix = TRUE, getGPL = FALSE)
-
-# This returns a list; take the first ExpressionSet
 eset <- gse1[[1]]
 anno_gse <- pData(eset)
 
-# ---- 2) Build a small metadata table ----
-# Column names can vary; we defensively find the methylation class column
+# ---- 2) Build a small metadata ----
 mclass_col <- grep("^methylation class", colnames(anno_gse), value = TRUE)
 if (length(mclass_col) == 0) stop("No 'methylation class' column found in pData(). Check colnames(anno_gse).")
 
@@ -107,7 +102,7 @@ both_keep <- both[both$gsm %in% keep_gsm, ]
 basenames_keep <- both_keep$base
 basenames_keep <- basenames_keep[!duplicated(basenames_keep)]
 
-# ---- 6) Read only those controls ----
+# ---- 6) Read only the controls ----
 RG_gse_ctrl <- read.metharray(basenames_keep, verbose = TRUE)
 cat("Loaded control samples:", ncol(RG_gse_ctrl), "\n")
 
@@ -125,7 +120,7 @@ Mset_ctrl <- preprocessRaw(RG_gse_ctrl)
 #=========================================
 
 # -------------------------------
-# 7) Create conumee2 annotation
+# Create conumee2 annotation
 # -------------------------------
 data(exclude_regions)
 data(detail_regions)  # hg19 example detail regions (works for 450k/EPIC, generally OK for overlap)
@@ -137,7 +132,7 @@ anno <- CNV.create_anno(
 )
 
 # -------------------------------
-# 8) Optional sanity check: EPICv2 probe naming
+# EPICv2 probe naming
 # -------------------------------
 # If you see cg00000029_TC21 style rownames, conumee2 overlap may still work,
 # but trimming can prevent accidental probe drop. We'll do a safe trim only if needed.
@@ -163,17 +158,15 @@ MSet_icm  <- trim_cg_ids_if_needed(MSet_icm)
 Mset_ctrl <- trim_cg_ids_if_needed(Mset_ctrl)
 
 # -------------------------------
-# 9) Build CNV data objects
+# Build CNV data objects
 # -------------------------------
-# -------------------------------
-# Build TOTAL intensity matrices (Meth + Unmeth)
-# -------------------------------
+
 get_total_intensity <- function(MSet, sample_name = NULL) {
   M <- getMeth(MSet)
   U <- getUnmeth(MSet)
   tot <- M + U
   
-  # Force 2D (important if only 1 sample)
+  # safety net if only one sample
   tot <- as.matrix(tot)
   if (!is.null(sample_name)) {
     colnames(tot) <- sample_name
@@ -185,10 +178,10 @@ get_total_intensity <- function(MSet, sample_name = NULL) {
 
 I_gbm  <- get_total_intensity(MSet_gbm,  "Case_GBM")
 I_icm  <- get_total_intensity(MSet_icm,  "Case_ICM")
-I_ctrl <- get_total_intensity(Mset_ctrl)  # keep existing colnames for many controls
+I_ctrl <- get_total_intensity(Mset_ctrl)
 
 # -------------------------------
-# Align probe universe (recommended)
+# Align probe
 # -------------------------------
 common_ids <- Reduce(intersect, list(rownames(I_gbm), rownames(I_icm), rownames(I_ctrl)))
 cat("Shared probes (GBM/ICM/CTRL):", length(common_ids), "\n")
@@ -198,36 +191,36 @@ I_icm  <- I_icm [common_ids, , drop = FALSE]
 I_ctrl <- I_ctrl[common_ids, , drop = FALSE]
 
 # -------------------------------
-# NOW create CNV.data objects (must be data.frame)
+# NOW create CNV.data objects
 # -------------------------------
 data_gbm  <- CNV.load(as.data.frame(I_gbm))
 data_icm  <- CNV.load(as.data.frame(I_icm))
 data_ctrl <- CNV.load(as.data.frame(I_ctrl))
 
 # -------------------------------
-# 10) Run CNV pipeline (GBM)
+# Run CNV pipeline (GBM)
 # -------------------------------
 x_gbm <- CNV.fit(data_gbm, data_ctrl, anno)
 x_gbm <- CNV.bin(x_gbm)
 x_gbm <- CNV.detail(x_gbm)
 x_gbm <- CNV.segment(x_gbm)
-# optional focal calling:
+# focal calling:
 x_gbm_foc <- CNV.focal(x_gbm)
 
 # -------------------------------
-# 11) Run CNV pipeline (ICM)
+# Run CNV pipeline (ICM)
 # -------------------------------
 x_icm <- CNV.fit(data_icm, data_ctrl, anno)
 x_icm <- CNV.bin(x_icm)
 x_icm <- CNV.detail(x_icm)
 x_icm <- CNV.segment(x_icm)
-# optional focal calling:
+# focal calling:
 x_icm_foc <- CNV.focal(x_icm)
 
 save(x_gbm, x_gbm_foc, x_icm, x_icm_foc, file=file.path("results","cnv.RData"))
 
 # -------------------------------
-# 12) Output: plots + segments
+# Output: plots + segments
 # -------------------------------
 dir.create("results", showWarnings = FALSE)
 load(file.path("results","cnv.RData"))

@@ -8,7 +8,7 @@
 # 1) Pick controls from GEO metadata 🧊
 # 2) Match those GSM controls to IDAT pairs in your GSE_RAW_DIR 🧩
 # 3) Read controls + your case IDAT(s) 🧫
-# 4) preprocessRaw() because CNV wants intensities (not betas) ⚡
+# 4) preprocessRaw() because CNV wants intensities ⚡
 # 5) Run conumee2 per case:
 #       fit → bin → detail → segment → focal
 # 6) Export per-case bundle:
@@ -31,11 +31,11 @@ suppressPackageStartupMessages({
 # ------------------------------------------------------------
 # 0) Load helpers 🧰
 # ------------------------------------------------------------
-source(file.path("R", "helpers", "cnv_tools.R"))
-source(file.path("R", "helpers", "probe_id_tools.R"))  # for trimming cg suffixes safely
+source(file.path("helpers", "cnv_tools.R"))
+source(file.path("helpers", "probe_id_tools.R"))  # for trimming cg suffixes safely
 
 # ------------------------------------------------------------
-# 1) Dataset knobs (EDIT ME) 🧭🧠
+# 1) Dataset knobs 🧭🧠
 # ------------------------------------------------------------
 GSE_ID      <- "GSE90496"
 GSE_RAW_DIR <- "data/GSE90496_RAW"
@@ -60,7 +60,7 @@ GENES_TO_CHECK <- c("EGFR", "CDKN2A/B", "CDK4", "MDM2", "MET", "CDK6")
 MIN_CONTROLS <- 10
 
 # ------------------------------------------------------------
-# 2) Contract checks (fail fast, fail loud) 🚨
+# 2) Checkpoint screening (fail fast, fail loud) 🚨
 # ------------------------------------------------------------
 ensure_dir(OUT_DIR)
 
